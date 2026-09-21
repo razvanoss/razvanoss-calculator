@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Razvanoss Calculator - FiveM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(17, 24, 39, 0.75);
+            --border-color: rgba(236, 72, 153, 0.2);
+            --primary-glow: #ec4899;
+            --secondary-glow: #8b5cf6;
+            --accent-green: #10b981;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 40%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(236, 72, 153, 0.1);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--secondary-glow), var(--primary-glow));
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #fff, var(--primary-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        header p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .mode-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: var(--text-muted);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            padding: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn.active {
+            background: var(--primary-glow);
+            color: #fff;
+            border-color: var(--primary-glow);
+            box-shadow: 0 0 12px rgba(236, 72, 153, 0.4);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(3, 7, 18, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+            font-family: 'Orbitron', sans-serif;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: var(--primary-glow);
+            box-shadow: 0 0 10px rgba(236, 72, 153, 0.3);
+        }
+
+        .presets {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .preset-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            color: var(--text-muted);
+            font-size: 12px;
+            padding: 6px 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .preset-btn:hover {
+            background: var(--secondary-glow);
+            color: #fff;
+            border-color: var(--secondary-glow);
+            box-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .card-stat {
+            background: rgba(3, 7, 18, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .card-stat span {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .card-stat strong {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .materials-container {
+            margin-top: 12px;
+            background: rgba(3, 7, 18, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        .materials-title {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .materials-list {
+            display: flex;
+            justify-content: space-around;
+            gap: 5px;
+        }
+
+        .material-item {
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .material-item b {
+            display: block;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            color: #fff;
+            margin-top: 2px;
+        }
+
+        .profit-card {
+            grid-column: span 2;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.05));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .profit-card span {
+            font-size: 11px;
+            color: #34d399;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .profit-card h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            color: var(--accent-green);
+            margin-top: 4px;
+            text-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+
+        footer-tag {
+            display: block;
+            text-align: center;
+            font-size: 10px;
+            color: rgba(156, 163, 175, 0.5);
+            margin-top: 15px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Razvanoss Calculator</h1>
+        <p>Sistem Avansat FiveM (Gloanțe & TEC)</p>
+    </header>
+
+    <div class="mode-selector">
+        <button class="mode-btn active" id="btn-gloante" onclick="setMod('gloante')">🔫 Gloanțe</button>
+        <button class="mode-btn" id="btn-tec" onclick="setMod('tec')">⚡ TEC</button>
+    </div>
+
+    <div class="input-group">
+        <label id="label-cantitate">Cantitate Gloanțe</label>
+        <div class="input-wrapper">
+            <input type="number" id="cantitate" value="50" min="1" oninput="calculeaza()">
+        </div>
+        <div class="presets" id="presets-container">
+            <button class="preset-btn" onclick="setCantitate(50)">50</button>
+            <button class="preset-btn" onclick="setCantitate(500)">500</button>
+            <button class="preset-btn" onclick="setCantitate(1000)">1K</button>
+            <button class="preset-btn" onclick="setCantitate(5000)">5K</button>
+        </div>
+    </div>
+
+    <div class="input-group">
+        <label id="label-pret">Preț Vânzare per Bucată ($)</label>
+        <div class="input-wrapper">
+            <input type="number" id="pret" value="650" min="0" oninput="calculeaza()">
+        </div>
+    </div>
+
+    <div class="materials-container">
+        <div class="materials-title" id="materials-title-text">Materiale Necesare</div>
+        <div class="materials-list" id="materials-list">
+            <!-- Dinamic prin JS -->
+        </div>
+    </div>
+
+    <div class="results-grid">
+        <div class="card-stat">
+            <span id="text-unitate">Loturi Necesar</span>
+            <strong id="val-loturi">1</strong>
+        </div>
+        <div class="card-stat">
+            <span>Cost Total (Investiție)</span>
+            <strong id="val-cost" style="color: #f87171;">$12,000</strong>
+        </div>
+        
+        <div class="card-stat" style="grid-column: span 2;">
+            <span>Încasări Totale Estimat</span>
+            <strong id="val-incasari" style="color: #60a5fa;">$32,500</strong>
+        </div>
+
+        <div class="profit-card">
+            <span>Profit Net Total</span>
+            <h2 id="val-profit">$20,500</h2>
+        </div>
+    </div>
+
+    <footer-tag>Razvanoss Engine v2.2</footer-tag>
+</div>
+
+<script>
+let modCurent = 'gloante';
+
+function setMod(mod) {
+    modCurent = mod;
+    document.getElementById('btn-gloante').classList.toggle('active', mod === 'gloante');
+    document.getElementById('btn-tec').classList.toggle('active', mod === 'tec');
+
+    let inputCantitate = document.getElementById('cantitate');
+    let inputPret = document.getElementById('pret');
+    let labelCantitate = document.getElementById('label-cantitate');
+    let presetsContainer = document.getElementById('presets-container');
+
+    if (mod === 'gloante') {
+        labelCantitate.innerText = "Cantitate Gloanțe";
+        inputCantitate.value = 50;
+        inputPret.value = 650;
+        presetsContainer.innerHTML = `
+            <button class="preset-btn" onclick="setCantitate(50)">50</button>
+            <button class="preset-btn" onclick="setCantitate(500)">500</button>
+            <button class="preset-btn" onclick="setCantitate(1000)">1K</button>
+            <button class="preset-btn" onclick="setCantitate(5000)">5K</button>
+        `;
+    } else {
+        labelCantitate.innerText = "Număr de TEC-uri";
+        inputCantitate.value = 1;
+        inputPret.value = 180000;
+        presetsContainer.innerHTML = `
+            <button class="preset-btn" onclick="setCantitate(1)">1</button>
+            <button class="preset-btn" onclick="setCantitate(3)">3</button>
+            <button class="preset-btn" onclick="setCantitate(5)">5</button>
+            <button class="preset-btn" onclick="setCantitate(10)">10</button>
+        `;
+    }
+    calculeaza();
+}
+
+function setCantitate(val) {
+    document.getElementById('cantitate').value = val;
+    calculeaza();
+}
+
+function calculeaza() {
+    let cantitate = parseInt(document.getElementById('cantitate').value) || 0;
+    let pretVanzare = parseFloat(document.getElementById('pret').value) || 0;
+    
+    let costTotal = 0;
+    let incasari = cantitate * pretVanzare;
+    let materialsHTML = '';
+    let unitateText = '';
+    let materialsTitle = 'Materiale Necesare';
+
+    if (modCurent === 'gloante') {
+        let loturi = Math.ceil(cantitate / 50);
+        costTotal = loturi * 12000;
+        let cupru = loturi * 4;
+        let sulf = loturi * 4;
+        
+        unitateText = "Loturi Necesar";
+        document.getElementById('val-loturi').innerText = loturi;
+
+        materialsHTML = `
+            <div class="material-item"><span>🟢 Cupru</span><b>${cupru} buc</b></div>
+            <div class="material-item"><span>🟡 Sulf</span><b>${sulf} buc</b></div>
+        `;
+    } else {
+        // Pentru TEC: 
+        // Valiza = 30 fier + 30 aluminiu
+        // Arma = 1 valiză + 14 fier + 14 aluminiu
+        // Total per TEC = 44 fier + 44 aluminiu (88 componente brute x 1500 = 132.000 cost materiale)
+        let fierTotal = cantitate * (30 + 14);
+        let aluminiuTotal = cantitate * (30 + 14);
+        let valizeNecesare = cantitate;
+
+        costTotal = (fierTotal + aluminiuTotal) * 1500;
+
+        unitateText = "Bucăți TEC";
+        document.getElementById('val-loturi').innerText = cantitate;
+
+        materialsTitle = `Materiale Brute (Include ${valizeNecesare} Valiz${valizeNecesare > 1 ? 'e' : 'ă'})`;
+
+        materialsHTML = `
+            <div class="material-item"><span>🔩 Fier Total</span><b>${fierTotal}</b></div>
+            <div class="material-item"><span>⚪ Aluminiu Total</span><b>${aluminiuTotal}</b></div>
+        `;
+    }
+
+    document.getElementById('materials-title-text').innerText = materialsTitle;
+    document.getElementById('materials-list').innerHTML = materialsHTML;
+    document.getElementById('text-unitate').innerText = unitateText;
+    document.getElementById('val-cost').innerText = "$" + costTotal.toLocaleString();
+    document.getElementById('val-incasari').innerText = "$" + incasari.toLocaleString();
+    
+    let profit = incasari - costTotal;
+    let elProfit = document.getElementById('val-profit');
+    elProfit.innerText = "$" + profit.toLocaleString();
+    
+    if (profit < 0) {
+        elProfit.style.color = "#f87171";
+    } else {
+        elProfit.style.color = "var(--accent-green)";
+    }
+}
+
+calculeaza();
+</script>
+
+</body>
+</html>
